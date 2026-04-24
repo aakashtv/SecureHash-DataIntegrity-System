@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Key Lifecycle Management Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">ML-Based Cryptographic Key Lifecycle Management System</p>
+                <h1>Key Operations Dashboard</h1>
+                <p class="hero-text">
+                    Monitor key health, simulate telemetry, and trigger automated policy decisions
+                    from one interactive security console.
+                </p>
+            </div>
+
+            <section class="create-panel">
+                <h2>Create New Key</h2>
+                <form action="{{ url_for('create_key_route') }}" method="post" class="create-form">
+                    <label for="key_name">Key Name</label>
+                    <input type="text" id="key_name" name="key_name" placeholder="payments-key" required>
+
+                    <label for="algorithm">Algorithm</label>
+                    <input type="text" id="algorithm" name="algorithm" placeholder="AES-256 or RSA-2048" required>
+
+                    <button type="submit" class="primary-btn">Create Key</button>
+                </form>
+            </section>
+        </header>
+
+        <section class="dashboard-grid">
+            <div class="keys-panel">
+                <div class="section-heading">
+                    <h2>Managed Keys</h2>
+                    <span class="count-pill">{{ keys|length }} keys</span>
+                </div>
+
+                <div class="key-grid">
+                    {% for key in keys %}
+                    <article
+                        class="key-card"
+                        data-key-id="{{ key.id }}"
+                        data-key-name="{{ key.key_name }}"
+                        data-algorithm="{{ key.algorithm }}"
+                        data-usage-rate="{{ key.usage_count }}"
+                        data-anomaly-flag="{{ 1 if key.anomaly_flag else 0 }}"
+                    >
+                        <div class="card-top">
+                            <div>
+                                <p class="card-label">Key</p>
+                                <h3>{{ key.key_name }}</h3>
+                            </div>
+                            <span class="status-badge status-{{ key.status|lower }}">{{ key.status }}</span>
+                        </div>
+
+                        <div class="meta-grid">
+                            <div>
+                                <span class="meta-label">Algorithm</span>
+                                <strong>{{ key.algorithm }}</strong>
+                            </div>
+                            <div>
+                                <span class="meta-label">Usage Count</span>
+                                <strong class="usage-value">{{ key.usage_count }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="telemetry-summary">
+                            <span>Location: {{ key.last_location or 'Unknown' }}</span>
+                            <span>Operation: {{ key.last_operation or 'Unknown' }}</span>
+                        </div>
+
+                        <div class="risk-display">
+                            <div class="risk-head">
+                                <span>Risk Score</span>
+                                <strong class="risk-score-value">Not analysed</strong>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-bar progress-low"></div>
+                            </div>
+                            <p class="risk-level-value">Level: Pending</p>
+                            <p class="risk-action-value">Action: Awaiting analysis</p>
+                        </div>
+
+                        <div class="explanation-box">
+                            <h4>Why this matters</h4>
+                            <p class="explanation-text">
+                                Baseline telemetry is available. Run a risk assessment to see the
+                                current security explanation for this key.
+                            </p>
+                        </div>
+
+                        <div class="card-actions">
+                            <a class="action-btn subtle-btn" href="{{ url_for('simulate_normal_route', key_id=key.id) }}">
+                                Simulate Normal
+                            </a>
+                            <a class="action-btn alert-btn" href="{{ url_for('simulate_attack_route', key_id=key.id) }}">
+                                Simulate Attack
+                            </a>
+                            <button type="button" class="action-btn primary-btn risk-trigger" data-key-id="{{ key.id }}">
+                                Get Risk
+                            </button>
+                        </div>
+                    </article>
+                    {% else %}
+                    <div class="empty-state">
+                        <h3>No keys created yet</h3>
+                        <p>Create a key to start telemetry simulation and risk analysis.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <aside class="logs-panel">
+                <div class="section-heading">
+                    <h2>Activity Log</h2>
+                    <span class="count-pill">Live</span>
+                </div>
+                <div id="logs-list" class="logs-list">
+                    <div class="log-entry">
+                        <strong>Dashboard ready</strong>
+                        <span>Use the card actions to simulate events and inspect risk responses.</span>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
